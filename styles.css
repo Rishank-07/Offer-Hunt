@@ -1,0 +1,904 @@
+/* ==========================================================================
+   OFFERHUNT Job-Portal Design System (Internshala-Inspired)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --primary-blue: #008BDC;
+  --primary-hover: #0A6DB5;
+  --primary-light: #EBF8FF;
+  --hero-navy-dark: #0F2656;
+  --hero-navy: #14377D;
+  --hero-navy-end: #1E55B3;
+  --hero-accent-yellow: #FFD54F;
+  --stats-band-bg: #0C2353;
+  --bg-page: #FFFFFF;
+  --bg-section-alt: #F4F8FC;
+  --text-primary: #1F2937;
+  --text-secondary: #64748B;
+  --text-muted: #94A3B8;
+  --border-light: #E2E8F0;
+  --border-card: #E5E7EB;
+  --radius-card: 16px;
+  --radius-btn: 8px;
+  --radius-pill: 9999px;
+  --shadow-soft: 0 4px 20px rgba(20, 55, 125, 0.07);
+  --shadow-hover: 0 10px 25px rgba(20, 55, 125, 0.12);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 12px rgba(20, 55, 125, 0.05);
+
+  --success-bg: #E6F7ED;
+  --success-text: #16A34A;
+  --success-border: #A7F3D0;
+
+  --warning-bg: #FFF8E6;
+  --warning-text: #D97706;
+  --warning-border: #FDE68A;
+
+  --danger-bg: #FEECEB;
+  --danger-text: #DC2626;
+  --danger-border: #FECACA;
+
+  --info-bg: #EBF8FF;
+  --info-text: #008BDC;
+  --info-border: #BAE6FD;
+}
+
+/* Global Font and Base Overrides */
+html, body, [class*="css"], [class*="st-"] {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  color: var(--text-primary);
+}
+
+/* Streamlit Chrome Hiding */
+#MainMenu { visibility: hidden !important; }
+footer { visibility: hidden !important; }
+header[data-testid="stHeader"] {
+  background: rgba(255, 255, 255, 0.85) !important;
+  backdrop-filter: blur(8px) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  height: 2.75rem !important;
+}
+
+/* Page Layout Container */
+.block-container {
+  max-width: 1180px !important;
+  padding-top: 0.5rem !important;
+  padding-bottom: 3.5rem !important;
+  margin: 0 auto !important;
+}
+
+/* --------------------------------------------------------------------------
+   1. Announcement Strip
+   -------------------------------------------------------------------------- */
+.oh-announcement-strip {
+  background: linear-gradient(90deg, #0A5EA8 0%, #008BDC 50%, #0A5EA8 100%);
+  color: #FFFFFF;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 139, 220, 0.2);
+  margin-bottom: 0.75rem;
+}
+.oh-announcement-strip a {
+  color: #FFFFFF !important;
+  text-decoration: underline;
+  font-weight: 700;
+  cursor: pointer;
+}
+.oh-announcement-strip a:hover {
+  color: var(--hero-accent-yellow) !important;
+}
+.oh-announcement-strip .tag {
+  background: rgba(255, 255, 255, 0.22);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+/* --------------------------------------------------------------------------
+   2. Top Navbar
+   -------------------------------------------------------------------------- */
+.oh-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 99;
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 12px rgba(20, 55, 125, 0.05);
+  margin-bottom: 1.25rem;
+}
+
+.oh-logo-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  text-decoration: none;
+}
+.oh-logo-mark {
+  width: 36px;
+  height: 36px;
+  background: linear-gradient(135deg, #008BDC 0%, #14377D 100%);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.2rem;
+  box-shadow: 0 2px 6px rgba(0, 139, 220, 0.3);
+}
+.oh-logo-text {
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: #14377D;
+}
+.oh-logo-text span {
+  color: #008BDC;
+}
+
+.oh-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.oh-nav-item {
+  color: #475569;
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  transition: all 180ms ease;
+  position: relative;
+}
+.oh-nav-item:hover, .oh-nav-item.active {
+  color: var(--primary-blue);
+  background: var(--primary-light);
+}
+
+.oh-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.oh-search-pill {
+  background: #F1F5F9;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  padding: 0.45rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 180px;
+}
+.oh-nav-btn-outlined {
+  padding: 0.45rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--primary-blue);
+  border: 1.5px solid var(--primary-blue);
+  background: #FFFFFF;
+  border-radius: var(--radius-btn);
+  text-decoration: none;
+  transition: all 180ms ease;
+}
+.oh-nav-btn-outlined:hover {
+  background: var(--primary-light);
+}
+.oh-nav-btn-primary {
+  padding: 0.5rem 1.15rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: var(--primary-blue);
+  border: none;
+  border-radius: var(--radius-btn);
+  box-shadow: 0 2px 8px rgba(0, 139, 220, 0.25);
+  text-decoration: none;
+  transition: all 180ms ease;
+}
+.oh-nav-btn-primary:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------
+   3. Hero Section
+   -------------------------------------------------------------------------- */
+.oh-hero {
+  background: linear-gradient(135deg, var(--hero-navy-dark) 0%, var(--hero-navy) 40%, var(--hero-navy-end) 100%);
+  border-radius: var(--radius-card);
+  padding: 2.5rem 2.25rem 2rem 2.25rem;
+  color: #FFFFFF;
+  margin-bottom: 0rem;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(20, 55, 125, 0.15);
+}
+.oh-hero::after {
+  content: "";
+  position: absolute;
+  top: -30%;
+  right: -10%;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(0, 139, 220, 0.25) 0%, rgba(20, 55, 125, 0) 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.oh-hero-headline {
+  font-size: 2.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+  margin: 0 0 0.5rem 0;
+  color: #FFFFFF;
+}
+.oh-hero-headline .highlight {
+  color: var(--hero-accent-yellow);
+  position: relative;
+  display: inline-block;
+}
+.oh-hero-subheading {
+  font-size: 1.1rem;
+  font-weight: 400;
+  color: #E2E8F0;
+  margin: 0 0 1.5rem 0;
+  line-height: 1.4;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+  padding-bottom: 0.75rem;
+  display: inline-block;
+}
+
+/* Hero Discovery Panel (Embedded form container) */
+.oh-hero-panel {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  color: var(--text-primary);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  margin-top: 0.75rem;
+  border: 1px solid var(--border-light);
+}
+
+/* --------------------------------------------------------------------------
+   4. Stats Strip
+   -------------------------------------------------------------------------- */
+.oh-stats-strip {
+  background: var(--stats-band-bg);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  padding: 0.85rem 2rem;
+  color: #CBD5E1;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(12, 35, 83, 0.2);
+}
+.oh-stats-key {
+  color: #FFFFFF;
+  font-weight: 700;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.oh-stats-key span {
+  color: var(--hero-accent-yellow);
+}
+.oh-stats-sources {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.oh-source-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #94A3B8;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+.oh-source-badge span {
+  color: #38BDF8;
+}
+
+/* --------------------------------------------------------------------------
+   5. Section Headings & Filter Chips
+   -------------------------------------------------------------------------- */
+.oh-section-header {
+  margin-top: 1rem;
+  margin-bottom: 1.25rem;
+}
+.oh-section-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1E293B;
+  letter-spacing: -0.4px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+}
+.oh-section-subtitle {
+  font-size: 0.92rem;
+  color: var(--text-secondary);
+  margin: 0.25rem 0 0 0;
+}
+
+.oh-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding: 0.25rem 0 0.85rem 0;
+  scrollbar-width: none;
+}
+.oh-chips-row::-webkit-scrollbar {
+  display: none;
+}
+.oh-chip {
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: all 180ms ease;
+  cursor: pointer;
+  border: 1px solid var(--border-card);
+  background: #FFFFFF;
+  color: #475569;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+.oh-chip:hover {
+  background: #F8FAFC;
+  border-color: #CBD5E1;
+  color: var(--primary-blue);
+  transform: translateY(-1px);
+}
+.oh-chip.active {
+  background: var(--primary-blue);
+  color: #FFFFFF;
+  border-color: var(--primary-blue);
+  box-shadow: 0 2px 8px rgba(0, 139, 220, 0.28);
+}
+.oh-chip .count {
+  background: rgba(0, 0, 0, 0.08);
+  padding: 1px 6px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+}
+.oh-chip.active .count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #FFFFFF;
+}
+
+/* --------------------------------------------------------------------------
+   6. Opportunity Card (Internshala Style)
+   -------------------------------------------------------------------------- */
+.oh-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(265px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.oh-job-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-card);
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  position: relative;
+}
+.oh-job-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+  border-color: #CBD5E1;
+}
+
+.oh-job-card-header {
+  margin-bottom: 0.75rem;
+}
+.oh-job-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+.oh-job-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1E293B;
+  line-height: 1.35;
+  margin: 0;
+}
+.oh-company-name {
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: #64748B;
+  margin: 0;
+}
+
+.oh-card-divider {
+  height: 1px;
+  background: #F1F5F9;
+  margin: 0.75rem 0;
+}
+
+.oh-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.85rem;
+  color: #334155;
+}
+.oh-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.oh-meta-icon {
+  font-size: 0.95rem;
+  width: 18px;
+  color: #64748B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.oh-job-card-footer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.oh-job-type-tag {
+  background: #F1F5F9;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+}
+.oh-view-details-link {
+  color: var(--primary-blue);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.oh-view-details-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   7. Verification Badges
+   -------------------------------------------------------------------------- */
+.oh-badge-verified {
+  background: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.oh-badge-review {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.oh-badge-failed {
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-border);
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   8. Carousel Controls
+   -------------------------------------------------------------------------- */
+.oh-carousel-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  margin: 1.25rem 0 2rem 0;
+}
+.oh-carousel-pill {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-pill);
+  padding: 0.4rem 1rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+.oh-carousel-arrow {
+  color: #64748B;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  user-select: none;
+  transition: color 150ms ease;
+}
+.oh-carousel-arrow:hover {
+  color: var(--primary-blue);
+}
+.oh-carousel-progress {
+  width: 140px;
+  height: 6px;
+  background: #E2E8F0;
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+.oh-carousel-progress-fill {
+  height: 100%;
+  width: 45%;
+  background: var(--primary-blue);
+  border-radius: 999px;
+}
+
+/* --------------------------------------------------------------------------
+   9. Clean Streamlit Tabs Restyling
+   -------------------------------------------------------------------------- */
+div[data-testid="stTabs"] {
+  margin-top: 1.5rem;
+}
+div[data-testid="stTabs"] [role="tablist"] {
+  border-bottom: 2px solid var(--border-light) !important;
+  gap: 1.5rem !important;
+  background: transparent !important;
+  padding-bottom: 0px !important;
+}
+div[data-testid="stTabs"] button[role="tab"] {
+  border: none !important;
+  background: transparent !important;
+  font-size: 0.98rem !important;
+  font-weight: 600 !important;
+  color: #64748B !important;
+  padding: 0.75rem 0.25rem !important;
+  border-bottom: 3px solid transparent !important;
+  transition: all 180ms ease !important;
+}
+div[data-testid="stTabs"] button[role="tab"]:hover {
+  color: var(--primary-blue) !important;
+}
+div[data-testid="stTabs"] button[role="tab"][aria-selected="true"] {
+  color: var(--primary-blue) !important;
+  border-bottom: 3px solid var(--primary-blue) !important;
+  font-weight: 700 !important;
+}
+
+/* --------------------------------------------------------------------------
+   10. Generic Card Container & Persona Box
+   -------------------------------------------------------------------------- */
+.oh-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-card);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-card);
+}
+.oh-card-header-sm {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1E293B;
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.persona-box {
+  background: #F8FAFC;
+  border-left: 4px solid var(--primary-blue);
+  padding: 0.85rem 1.15rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #334155;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border-light);
+  border-right: 1px solid var(--border-light);
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* --------------------------------------------------------------------------
+   11. Reliability Lab Restyling
+   -------------------------------------------------------------------------- */
+.oh-fault-card {
+  background: #FFF5F5;
+  border: 1px solid #FECACA;
+  border-left: 5px solid #EF4444;
+  padding: 1.15rem 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08);
+  height: 100%;
+}
+.oh-fault-title {
+  margin: 0 0 0.4rem 0;
+  color: #991B1B;
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.oh-fault-desc {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #7F1D1D;
+  line-height: 1.45;
+}
+
+.oh-recovery-card {
+  background: #F0FDF4;
+  border: 1px solid #BBF7D0;
+  border-left: 5px solid #22C55E;
+  padding: 1.15rem 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.08);
+  height: 100%;
+}
+.oh-recovery-title {
+  margin: 0 0 0.4rem 0;
+  color: #166534;
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.oh-recovery-desc {
+  margin: 0;
+  font-size: 0.92rem;
+  color: #14532D;
+  line-height: 1.45;
+}
+
+.oh-kpi-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-card);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(20, 55, 125, 0.04);
+  transition: transform 150ms ease;
+}
+.oh-kpi-card:hover {
+  transform: translateY(-2px);
+}
+.oh-kpi-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.35rem;
+}
+.oh-kpi-value {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #1E293B;
+  margin-bottom: 0.15rem;
+}
+.oh-kpi-subtitle {
+  font-size: 0.75rem;
+  color: #94A3B8;
+}
+
+.oh-empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  background: #F8FAFC;
+  border-radius: var(--radius-card);
+  border: 2px dashed #CBD5E1;
+  margin: 1.5rem 0;
+}
+.oh-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+}
+.oh-empty-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 0.35rem;
+}
+.oh-empty-desc {
+  font-size: 0.92rem;
+  color: #64748B;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* --------------------------------------------------------------------------
+   12. Diagnostics Status Pills
+   -------------------------------------------------------------------------- */
+.oh-diag-pill {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.85rem;
+  background: #F8FAFC;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  font-size: 0.85rem;
+}
+.oh-diag-pill-name {
+  font-weight: 600;
+  color: #334155;
+}
+.oh-status-pill-green {
+  background: #DEF7EC;
+  color: #03543F;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid #84E1BC;
+}
+.oh-status-pill-amber {
+  background: #FEF3C7;
+  color: #92400E;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid #FCD34D;
+}
+.oh-status-pill-red {
+  background: #FDE8E8;
+  color: #9B1C1C;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid #F8B4B4;
+}
+
+/* --------------------------------------------------------------------------
+   13. Streamlit Form Controls & Buttons Styling
+   -------------------------------------------------------------------------- */
+button[kind="primary"], .stButton > button[kind="primary"] {
+  background-color: var(--primary-blue) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-btn) !important;
+  border: none !important;
+  padding: 0.55rem 1.25rem !important;
+  min-height: 44px !important;
+  box-shadow: 0 2px 8px rgba(0, 139, 220, 0.25) !important;
+  transition: all 180ms ease !important;
+}
+button[kind="primary"]:hover, .stButton > button[kind="primary"]:hover {
+  background-color: var(--primary-hover) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 139, 220, 0.35) !important;
+}
+
+button[kind="secondary"], .stButton > button[kind="secondary"] {
+  background-color: #FFFFFF !important;
+  color: var(--primary-blue) !important;
+  border: 1.5px solid var(--primary-blue) !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-btn) !important;
+  min-height: 44px !important;
+  transition: all 180ms ease !important;
+}
+button[kind="secondary"]:hover, .stButton > button[kind="secondary"]:hover {
+  background-color: var(--primary-light) !important;
+  border-color: var(--primary-hover) !important;
+  color: var(--primary-hover) !important;
+}
+
+/* Text Inputs, Selects, Sliders */
+div[data-baseweb="input"] {
+  border-radius: var(--radius-btn) !important;
+  border-color: var(--border-light) !important;
+}
+div[data-baseweb="input"]:focus-within {
+  border-color: var(--primary-blue) !important;
+  box-shadow: 0 0 0 3px rgba(0, 139, 220, 0.18) !important;
+}
+div[data-baseweb="select"] > div {
+  border-radius: var(--radius-btn) !important;
+}
+
+/* Responsive Overrides */
+@media (max-width: 768px) {
+  .oh-navbar {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: stretch;
+  }
+  .oh-nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .oh-nav-actions {
+    justify-content: center;
+  }
+  .oh-hero-headline {
+    font-size: 1.85rem;
+  }
+  .oh-stats-strip {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  .oh-stats-sources {
+    flex-wrap: wrap;
+  }
+  .oh-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
