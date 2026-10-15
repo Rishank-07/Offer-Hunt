@@ -1,20 +1,16 @@
 """OFFERHUNT - Autonomous Internship Discovery & Proof-Validation Engine.
 
-Job-portal redesign inspired by the clean, modern aesthetic of internshala.com:
-- Sticky top navbar with original target/arrow logo mark & OFFERHUNT wordmark
-- Slim top announcement strip for demo/vetted notices
-- High-contrast Hero section with navy gradient (#14377D -> #1E55B3), yellow keyword highlight,
-  and embedded discovery launcher panel
-- Dark navy stats strip with real engine invariants and source badges
-- Section headings and category filter chips (ML, Backend, Remote, Bangalore, High Stipend)
-- Responsive 4-column opportunity cards with verified badges, stipend, location, duration, and hover lifts
-- Carousel pagination controls with progress bar
-- Restyled clean underlined tabs and card containers
-- Polished Reliability Lab with side-by-side soft-red fault and soft-green recovery cards, KPI metric cards,
-  and clean telemetry tables
-- Sidebar diagnostics with status pills (Active, Mock Mode, Demo Fixtures)
+Full landscape job-portal redesign inspired by the clean, modern aesthetic of internshala.com:
+- Wide landscape orientation (full screen width, multi-column layout)
+- Interactive Top Navbar with active segmented mode switcher and action buttons
+- Dual-column Hero section (Branded headline + Embedded discovery launcher form)
+- Interactive Filter Pills (st.pills) with immediate reactive filtering
+- 4-column responsive opportunity cards with verified badges and active external links
+- Real working carousel controls (Previous / Next pagination buttons)
+- Comprehensive workflow tabs (Plan DAG, Live Steps, Disk Verification, Safety Approvals, Final Report)
+- Polished Reliability Lab with side-by-side cards, 5 KPI telemetry cards, and data export
 
-Architectural Invariant: ZERO backend or pipeline changes. UI-only upgrade.
+Architectural Invariant: ZERO backend logic change. SQLite WAL, MCP tools, and Reliability Lab remain intact.
 """
 
 from __future__ import annotations
@@ -39,14 +35,11 @@ from theme import (
     clean_html,
     inject_theme,
     render_announcement_bar,
-    render_navbar,
-    render_hero_header,
+    render_hero_content,
     render_stats_strip,
     render_section_heading,
-    render_filter_chips,
     render_opportunity_card,
     render_opportunity_grid,
-    render_carousel_controls,
     render_diagnostics_pill,
     render_fault_and_recovery_cards,
     render_kpi_card,
@@ -55,7 +48,7 @@ from theme import (
 )
 
 # ---------------------------------------------------------------------------
-# Streamlit Page Setup & Custom Aesthetics (Internshala-inspired)
+# Streamlit Page Setup & Landscape Aesthetics
 # ---------------------------------------------------------------------------
 
 st.set_page_config(
@@ -65,7 +58,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Inject central theme CSS tokens and font imports
+# Inject central theme CSS tokens
 inject_theme()
 
 # ---------------------------------------------------------------------------
@@ -89,13 +82,16 @@ if "last_lab_metric" not in st.session_state:
     st.session_state.last_lab_metric = None
 
 if "portal_mode" not in st.session_state:
-    st.session_state.portal_mode = "🎯 Offer Discovery Dashboard"
+    st.session_state.portal_mode = "🎯 Offer Discovery"
 
 if "active_chip" not in st.session_state:
     st.session_state.active_chip = "All"
 
 if "carousel_page" not in st.session_state:
     st.session_state.carousel_page = 1
+
+if "show_run_history" not in st.session_state:
+    st.session_state.show_run_history = False
 
 diagnostics = service.get_diagnostics()
 all_recent_runs = service.list_recent_runs(limit=50)
@@ -106,46 +102,71 @@ all_recent_runs = service.list_recent_runs(limit=50)
 
 if diagnostics["banner_required"]:
     render_announcement_bar(
-        text=f"{diagnostics['banner_text']} — Plan generation & discovery are operating on vetted fixtures.",
+        text=f"{diagnostics['banner_text']} — Plan generation & discovery are operating on vetted catalog fixtures.",
         link_text="Evaluation Mode Active",
         link_url="#",
     )
 
 # ---------------------------------------------------------------------------
-# 2. Top Sticky Navbar
+# 2. Interactive Top Navbar (Real Streamlit interactive widgets)
 # ---------------------------------------------------------------------------
 
-render_navbar(
-    active_mode=st.session_state.portal_mode,
-    run_count=len(all_recent_runs),
-)
+with st.container():
+    col_brand, col_mode, col_act = st.columns([1.6, 2.2, 1.2])
+    with col_brand:
+        logo_svg = """<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path></svg>"""
+        render_html(f"""
+        <div class="oh-logo-group" style="padding-top: 0.35rem;">
+            <div class="oh-logo-mark">{logo_svg}</div>
+            <div class="oh-logo-text">OFFER<span>HUNT</span></div>
+        </div>
+        """)
 
-# ---------------------------------------------------------------------------
-# Portal Navigation Switcher
-# ---------------------------------------------------------------------------
+    with col_mode:
+        selected_nav = st.segmented_control(
+            "Portal Navigation",
+            ["🎯 Offer Discovery", "🧪 Reliability Lab"],
+            default=st.session_state.portal_mode,
+            label_visibility="collapsed",
+            key="main_nav_segmented",
+        )
+        if selected_nav and selected_nav != st.session_state.portal_mode:
+            st.session_state.portal_mode = selected_nav
+            st.rerun()
 
-col_nav1, col_nav2 = st.columns([3, 1])
-with col_nav1:
-    selected_mode = st.radio(
-        "Portal Mode",
-        ["🎯 Offer Discovery Dashboard", "🧪 Reliability Lab"],
-        index=0 if st.session_state.portal_mode == "🎯 Offer Discovery Dashboard" else 1,
-        horizontal=True,
-        label_visibility="collapsed",
-        key="portal_mode_radio",
-    )
-    if selected_mode != st.session_state.portal_mode:
-        st.session_state.portal_mode = selected_mode
-        st.rerun()
-
-with col_nav2:
-    if st.session_state.active_run_id:
-        st.caption(f"Active Run: `{st.session_state.active_run_id[:16]}...`")
+    with col_act:
+        col_act1, col_act2 = st.columns(2)
+        with col_act1:
+            if st.button("📊 Past Runs", key="btn_toggle_runs", use_container_width=True):
+                st.session_state.show_run_history = not st.session_state.show_run_history
+                st.rerun()
+        with col_act2:
+            if st.button("⚙️ Control", key="btn_open_diagnostics", use_container_width=True):
+                st.session_state.portal_mode = "🎯 Offer Discovery"
 
 app_mode = st.session_state.portal_mode
 
+# Optional Dropdown for Past Runs Inspector
+if st.session_state.show_run_history:
+    with st.container(border=True):
+        st.markdown("##### 🔍 Select Run to Inspect (SQLite Persisted)")
+        run_options = {r["run_id"]: f"{r['run_id']} - ({r['status']}) - {r['started_at_utc']}" for r in all_recent_runs}
+        if all_recent_runs:
+            sel_run = st.selectbox(
+                "Active Run",
+                options=list(run_options.keys()),
+                format_func=lambda x: run_options[x],
+                index=0 if st.session_state.active_run_id not in run_options else list(run_options.keys()).index(st.session_state.active_run_id),
+                key="top_run_selector",
+            )
+            if sel_run != st.session_state.active_run_id:
+                st.session_state.active_run_id = sel_run
+                st.rerun()
+        else:
+            st.info("No past runs recorded in database yet.")
+
 # ---------------------------------------------------------------------------
-# Sidebar: Run Inspector & Diagnostics Only (Collapsed by default)
+# Sidebar: System Diagnostics Only (Collapsed by default)
 # ---------------------------------------------------------------------------
 
 with st.sidebar:
@@ -153,26 +174,20 @@ with st.sidebar:
     st.caption("Operator Console & SQLite State Inspector")
 
     st.markdown("---")
-    st.markdown("#### 🔍 **Run Inspector (SQLite Persisted)**")
-    run_options = {r["run_id"]: f"{r['run_id'][:16]}... ({r['status']})" for r in all_recent_runs}
-
+    st.markdown("#### 🔍 **Run Inspector**")
     if all_recent_runs:
-        selected_run = st.selectbox(
-            "Select Run to Inspect",
-            options=list(run_options.keys()),
-            format_func=lambda x: run_options[x],
-            index=0 if st.session_state.active_run_id not in run_options else list(run_options.keys()).index(st.session_state.active_run_id),
-            key="sidebar_run_select",
+        s_run = st.selectbox(
+            "Select Run",
+            options=[r["run_id"] for r in all_recent_runs],
+            index=0 if not st.session_state.active_run_id else [r["run_id"] for r in all_recent_runs].index(st.session_state.active_run_id) if st.session_state.active_run_id in [r["run_id"] for r in all_recent_runs] else 0,
+            key="sidebar_run_select_box",
         )
-        if selected_run != st.session_state.active_run_id:
-            st.session_state.active_run_id = selected_run
+        if s_run != st.session_state.active_run_id:
+            st.session_state.active_run_id = s_run
             st.rerun()
-    else:
-        st.info("No runs found in database. Launch a discovery run to begin.")
 
     st.markdown("---")
     st.markdown("#### ⚙️ **System Diagnostics**")
-    
     render_html(render_diagnostics_pill("Gemini Model", "gemini-2.5-flash", "green"))
     render_html(
         render_diagnostics_pill(
@@ -202,28 +217,75 @@ with st.sidebar:
             "green" if diagnostics["demo_fixtures_present"] else "red",
         )
     )
-    st.caption("Adheres to strict zero-fabrication policies. If external APIs are absent, deterministic fixtures are used.")
+    st.caption("Adheres to strict zero-fabrication policies.")
 
 
 # ===========================================================================
 # PORTAL 1: 🎯 OFFER DISCOVERY DASHBOARD
 # ===========================================================================
 
-if app_mode == "🎯 Offer Discovery Dashboard":
+if app_mode == "🎯 Offer Discovery":
 
-    # 3. Hero Section
-    render_hero_header(
-        headline_part1="Find verified",
-        highlight_word="#1 internships",
-        headline_part2="autonomously",
-        subheading="Deterministic contract extraction, atomic workbook upserts, and cryptographic proof-validation.",
-    )
+    # 3. Landscape Dual-Column Hero Section
+    col_hero_left, col_hero_right = st.columns([1.15, 0.85], gap="large")
 
-    # 4. Stats Strip under Hero
-    render_stats_strip(
-        key_metric="5 verified opportunities per run",
-        sources=["Tavily Search", "MCP Protocol v2", "SQLite WAL", "Gemini 2.5", "SHA-256 Checksums"],
-    )
+    with col_hero_left:
+        render_html(render_hero_content(
+            headline_part1="Find verified",
+            highlight_word="#1 internships",
+            headline_part2="autonomously",
+            subheading="Deterministic contract extraction, atomic workbook upserts, and cryptographic proof-validation.",
+        ))
+        render_stats_strip(
+            key_metric="5 verified opportunities per run",
+            sources=["Tavily Search", "MCP Protocol v2", "SQLite WAL", "Gemini 2.5", "SHA-256 Checksums"],
+        )
+
+    with col_hero_right:
+        with st.container(border=True):
+            st.markdown("##### 🚀 **Launch Autonomous Discovery**")
+            st.caption("Configure search criteria and run budget in a single click.")
+
+            with st.form("discovery_quick_form"):
+                q_col1, q_col2 = st.columns(2)
+                with q_col1:
+                    role_input = st.text_input("Target Role", value="Machine Learning / Software Engineering")
+                    loc_input = st.text_input("Target Location", value="Bangalore, India / Remote")
+                with q_col2:
+                    seniority_input = st.selectbox("Seniority Level", ["Undergraduate / Intern", "Pre-final Year", "Recent Graduate", "Master's / Ph.D."])
+                    max_results_input = st.slider("Max Opportunities", min_value=1, max_value=10, value=5)
+
+                f_col1, f_col2 = st.columns(2)
+                with f_col1:
+                    output_path_input = st.text_input("Output Workbook (.xlsx)", value="offers.xlsx")
+                with f_col2:
+                    tool_budget_input = st.number_input("Max Tool Budget", min_value=3, max_value=30, value=10)
+
+                launch_btn = st.form_submit_button("🚀 Run Autonomous Hunt", use_container_width=True, type="primary")
+
+            if launch_btn:
+                with st.spinner("Executing discovery run with bounded MCP tools and SQLite persistence..."):
+                    try:
+                        new_run_id = asyncio.run(
+                            service.execute_discovery_run(
+                                goal=f"Find Summer 2026 {role_input} Internships with Stipend",
+                                constraints={
+                                    "role": role_input,
+                                    "location": loc_input,
+                                    "seniority": seniority_input,
+                                    "max_results": max_results_input,
+                                },
+                                output_path=output_path_input,
+                                run_budget={"max_tool_calls": tool_budget_input, "max_duration_seconds": 120},
+                                persona=DEFAULT_PERSONA,
+                                force_demo=diagnostics["is_demo_mode"],
+                            )
+                        )
+                        st.session_state.active_run_id = new_run_id
+                        st.success(f"✓ Run `{new_run_id}` completed successfully! Inspecting records below...")
+                        st.rerun()
+                    except Exception as run_err:
+                        st.error(f"Execution Error: {run_err}")
 
     # Load active run details for inspection
     active_run = None
@@ -254,34 +316,27 @@ if app_mode == "🎯 Offer Discovery Dashboard":
             except Exception:
                 pass
 
-    # 5. Section Heading & Category Filter Chips
-    render_section_heading(
-        title="Trending now on OFFERHUNT",
-        subtitle="Live opportunities extracted and verified with deterministic audit trails",
-        icon="🔥",
-    )
-
-    categories = [
-        {"label": "All", "count": len(opportunities)},
-        {"label": "Machine Learning", "count": 2},
-        {"label": "Backend", "count": 1},
-        {"label": "Remote", "count": 2},
-        {"label": "Bangalore", "count": 2},
-        {"label": "High Stipend (₹40k+)", "count": 3},
-    ]
-
-    col_chips, col_chip_btn = st.columns([5, 1])
-    with col_chips:
-        render_filter_chips(categories, active_label=st.session_state.active_chip)
-    with col_chip_btn:
-        chip_selection = st.selectbox(
-            "Filter Category",
-            [c["label"] for c in categories],
-            label_visibility="collapsed",
-            key="category_select_box",
+    # 4. Landscape Section Heading & Interactive Filter Pills
+    col_sec_title, col_sec_pills = st.columns([1.1, 1.9])
+    with col_sec_title:
+        render_section_heading(
+            title="Trending now on OFFERHUNT",
+            subtitle="Extracted & cryptographically verified internship postings",
+            icon="🔥",
         )
-        if chip_selection != st.session_state.active_chip:
-            st.session_state.active_chip = chip_selection
+    with col_sec_pills:
+        st.markdown("<div style='height: 0.8rem;'></div>", unsafe_allow_html=True)
+        pill_options = ["All", "Machine Learning", "Backend", "Remote", "Bangalore", "High Stipend (₹40k+)"]
+        active_chip = st.pills(
+            "Category Filters",
+            pill_options,
+            default=st.session_state.active_chip if st.session_state.active_chip in pill_options else "All",
+            label_visibility="collapsed",
+            key="interactive_domain_pills",
+        )
+        if active_chip and active_chip != st.session_state.active_chip:
+            st.session_state.active_chip = active_chip
+            st.session_state.carousel_page = 1
             st.rerun()
 
     # Filter opportunities by chip
@@ -300,9 +355,14 @@ if app_mode == "🎯 Offer Discovery Dashboard":
     if not filtered_opps:
         filtered_opps = opportunities
 
-    # 7. Opportunity Cards Grid (4-column responsive)
+    # 5. Opportunity Cards Grid (Landscape 4-column) with Pagination
+    total_pages = max(1, (len(filtered_opps) + 3) // 4)
+    page_idx = max(1, min(st.session_state.carousel_page, total_pages))
+    start_idx = (page_idx - 1) * 4
+    current_page_opps = filtered_opps[start_idx : start_idx + 4]
+
     card_html_items: List[str] = []
-    for opp in filtered_opps[:8]:
+    for opp in current_page_opps:
         card_html_items.append(
             render_opportunity_card(
                 title=opp.get("title", "Software Engineering Intern"),
@@ -312,130 +372,48 @@ if app_mode == "🎯 Offer Discovery Dashboard":
                 duration="2-6 Months",
                 tag="Internship with PPO" if opp.get("provenance", {}).get("ppo_eligible") else "Internship",
                 verified=True if opp.get("status") == "VERIFIED" else True,
-                source_url=opp.get("source_url", "#"),
+                source_url=opp.get("source_url", "https://internshala.com"),
             )
         )
 
     if card_html_items:
         render_opportunity_grid(card_html_items)
-        # 8. Carousel Controls
-        render_carousel_controls(current_page=st.session_state.carousel_page, total_pages=max(1, (len(filtered_opps) + 3) // 4))
 
-    # 9. Clean Workflow Tabs
-    render_html("<div style='height: 1.25rem;'></div>")
+        # 6. Interactive Carousel Buttons
+        col_c_space1, col_c_prev, col_c_prog, col_c_next, col_c_space2 = st.columns([2.5, 1, 2, 1, 2.5])
+        with col_c_prev:
+            if st.button("◀ Previous", key="btn_carousel_prev_click", use_container_width=True, disabled=(page_idx <= 1)):
+                st.session_state.carousel_page = max(1, page_idx - 1)
+                st.rerun()
+        with col_c_prog:
+            pct = int((page_idx / total_pages) * 100)
+            render_html(f"""
+            <div style="text-align:center; padding-top:0.35rem;">
+                <div style="background:#E2E8F0; height:6px; border-radius:999px; overflow:hidden; margin-bottom:3px;">
+                    <div style="background:#008BDC; width:{pct}%; height:100%; border-radius:999px;"></div>
+                </div>
+                <small style="color:#64748B; font-weight:600;">Page {page_idx} of {total_pages}</small>
+            </div>
+            """)
+        with col_c_next:
+            if st.button("Next ▶", key="btn_carousel_next_click", use_container_width=True, disabled=(page_idx >= total_pages)):
+                st.session_state.carousel_page = min(total_pages, page_idx + 1)
+                st.rerun()
+
+    # 7. Clean Workflow Tabs
+    render_html("<div style='height: 1.5rem;'></div>")
     tabs = st.tabs([
-        "🚀 Launch Discovery Run",
         "📋 Plan & Live Steps",
         "🔎 Evidence & Verification",
         "📥 Approval Inbox",
         "📑 Final Report",
+        "👤 Persona Settings",
     ])
 
     # -----------------------------------------------------------------------
-    # Subtab 1: Launch Discovery Run
+    # Subtab 1: Plan & Live Step Table
     # -----------------------------------------------------------------------
     with tabs[0]:
-        render_html(
-            """
-            <div class="oh-card-header-sm">
-                <span>🎯</span> Configure & Launch an Autonomous Internship Hunt
-            </div>
-            <p style="color: #64748B; font-size: 0.92rem; margin-top: -0.25rem;">
-                Specify role criteria, locations, spreadsheet output target, and bounded tool budgets.
-            </p>
-            """
-        )
-
-        with st.form("discovery_task_form"):
-            col1, col2 = st.columns([3, 2])
-            with col1:
-                goal_input = st.text_input(
-                    "Primary Search Goal",
-                    value="Find Summer 2026 Software & ML Internships with Stipend",
-                    help="High-level goal for the autonomous agent to research and extract.",
-                )
-            with col2:
-                role_input = st.text_input(
-                    "Target Role / Field",
-                    value="Machine Learning / Software Engineering",
-                )
-
-            col3, col4, col5 = st.columns(3)
-            with col3:
-                loc_input = st.text_input("City / Country / Remote", value="Bangalore, India / Remote")
-            with col4:
-                seniority_input = st.selectbox(
-                    "Seniority Level",
-                    ["Undergraduate / Intern", "Pre-final Year", "Recent Graduate", "Master's / Ph.D."],
-                )
-            with col5:
-                max_results_input = st.slider("Max Opportunities to Extract", min_value=1, max_value=10, value=5)
-
-            col6, col7 = st.columns(2)
-            with col6:
-                output_path_input = st.text_input(
-                    "Target Output Spreadsheet (.xlsx)",
-                    value="offers.xlsx",
-                    help="Target path inside artifacts/ directory. Must be a valid .xlsx filename.",
-                )
-            with col7:
-                tool_budget_input = st.number_input(
-                    "Run Budget: Max Tool Invocations",
-                    min_value=3,
-                    max_value=30,
-                    value=10,
-                )
-
-            # Validated Output Path Feedback
-            try:
-                validate_and_resolve_path(output_path_input, allowed_dir=service.artifacts_dir)
-                st.caption(f"✓ Validated Target Path: `artifacts/{output_path_input}`")
-            except Exception as ve:
-                st.error(f"❌ Invalid Path: {ve}")
-
-            # Synthetic Student Persona
-            render_html(
-                f"""
-                <div class="persona-box">
-                    <strong>Default Synthetic Persona:</strong> {DEFAULT_PERSONA['name']} | {DEFAULT_PERSONA['education']}<br/>
-                    <strong>Technical Skills:</strong> {DEFAULT_PERSONA['skills']}<br/>
-                    <strong>Target Interests:</strong> {DEFAULT_PERSONA['interests']}<br/>
-                    <small style="color: #64748B;"><em>{DEFAULT_PERSONA['disclaimer']}</em></small>
-                </div>
-                """
-            )
-
-            render_html("<div style='height: 0.5rem;'></div>")
-            launch_submitted = st.form_submit_button("🚀 Launch Autonomous Run", use_container_width=True, type="primary")
-
-        if launch_submitted:
-            with st.spinner("Initializing discovery run, generating plan, and executing bounded tools..."):
-                try:
-                    new_run_id = asyncio.run(
-                        service.execute_discovery_run(
-                            goal=goal_input,
-                            constraints={
-                                "role": role_input,
-                                "location": loc_input,
-                                "seniority": seniority_input,
-                                "max_results": max_results_input,
-                            },
-                            output_path=output_path_input,
-                            run_budget={"max_tool_calls": tool_budget_input, "max_duration_seconds": 120},
-                            persona=DEFAULT_PERSONA,
-                            force_demo=diagnostics["is_demo_mode"],
-                        )
-                    )
-                    st.session_state.active_run_id = new_run_id
-                    st.success(f"Run `{new_run_id}` completed! Inspecting results...")
-                    st.rerun()
-                except Exception as run_err:
-                    st.error(f"Execution Error: {run_err}")
-
-    # -----------------------------------------------------------------------
-    # Subtab 2: Plan & Live Step Table
-    # -----------------------------------------------------------------------
-    with tabs[1]:
         render_html(
             """
             <div class="oh-card-header-sm">
@@ -444,7 +422,7 @@ if app_mode == "🎯 Offer Discovery Dashboard":
             """
         )
         if not active_run:
-            st.info("No active run selected. Launch a run in the first tab or choose a past run from the sidebar.")
+            st.info("No active run selected. Launch a run in the hero panel above or choose a past run.")
         else:
             run_info = active_run["run"]
             render_html(
@@ -497,9 +475,9 @@ if app_mode == "🎯 Offer Discovery Dashboard":
             st.dataframe(df_steps, use_container_width=True)
 
     # -----------------------------------------------------------------------
-    # Subtab 3: Evidence Panel & Verification
+    # Subtab 2: Evidence Panel & Verification
     # -----------------------------------------------------------------------
-    with tabs[2]:
+    with tabs[1]:
         render_html(
             """
             <div class="oh-card-header-sm">
@@ -603,9 +581,9 @@ if app_mode == "🎯 Offer Discovery Dashboard":
                     st.json(evt.get("payload") or {})
 
     # -----------------------------------------------------------------------
-    # Subtab 4: Approval Inbox & Policy Boundary
+    # Subtab 3: Approval Inbox & Policy Boundary
     # -----------------------------------------------------------------------
-    with tabs[3]:
+    with tabs[2]:
         render_html(
             """
             <div class="oh-card-header-sm">
@@ -625,7 +603,7 @@ if app_mode == "🎯 Offer Discovery Dashboard":
 
         col_send1, col_send2 = st.columns([2, 3])
         with col_send1:
-            if st.button("⚠️ Simulate Send (Test Policy Block)", type="secondary", use_container_width=True):
+            if st.button("⚠️ Simulate Send (Test Policy Block)", key="btn_simulate_send_action", type="secondary", use_container_width=True):
                 if active_run:
                     block_res = service.simulate_send(active_run["run"]["run_id"])
                     st.error(f"🛑 {block_res['message']}")
@@ -643,20 +621,20 @@ if app_mode == "🎯 Offer Discovery Dashboard":
                         st.markdown(f"**Action:** `{app['action_type']}` | **Status:** `{app['status']}` | **Step:** `{app['step_id']}`")
                         st.json(app.get("payload") or {})
                     with col_b:
-                        if app["status"] == "PENDING" and st.button(f"Approve", key=f"app_{app['approval_id']}"):
+                        if app["status"] == "PENDING" and st.button("Approve", key=f"app_{app['approval_id']}"):
                             service.approve_step(app["approval_id"])
                             st.rerun()
                     with col_c:
-                        if app["status"] == "PENDING" and st.button(f"Reject", key=f"rej_{app['approval_id']}"):
+                        if app["status"] == "PENDING" and st.button("Reject", key=f"rej_{app['approval_id']}"):
                             service.reject_step(app["approval_id"])
                             st.rerun()
             else:
                 st.info("No pending approval requests for this run.")
 
     # -----------------------------------------------------------------------
-    # Subtab 5: Final Report & Claim Validation
+    # Subtab 4: Final Report & Claim Validation
     # -----------------------------------------------------------------------
-    with tabs[4]:
+    with tabs[3]:
         render_html(
             """
             <div class="oh-card-header-sm">
@@ -695,13 +673,25 @@ if app_mode == "🎯 Offer Discovery Dashboard":
             else:
                 st.info("No claim links evaluated for this run.")
 
-            st.markdown(
-                """
-                > [!IMPORTANT]
-                > **Core Verification Invariant:** A descriptive summary can never override a failed check.
-                > If any structural rule fails, the overall outcome strictly fails.
-                """
-            )
+    # -----------------------------------------------------------------------
+    # Subtab 5: Persona Settings Context
+    # -----------------------------------------------------------------------
+    with tabs[4]:
+        render_html(
+            f"""
+            <div class="oh-card">
+                <div class="oh-card-header-sm">
+                    <span>👤</span> Synthetic Student Persona Profile
+                </div>
+                <div class="persona-box">
+                    <strong>Default Synthetic Persona:</strong> {DEFAULT_PERSONA['name']} | {DEFAULT_PERSONA['education']}<br/>
+                    <strong>Technical Skills:</strong> {DEFAULT_PERSONA['skills']}<br/>
+                    <strong>Target Interests:</strong> {DEFAULT_PERSONA['interests']}<br/>
+                    <small style="color: #64748B;"><em>{DEFAULT_PERSONA['disclaimer']}</em></small>
+                </div>
+            </div>
+            """
+        )
 
 
 # ===========================================================================
@@ -720,7 +710,7 @@ elif app_mode == "🧪 Reliability Lab":
 
     # Scenario Selector Card
     with st.container(border=True):
-        col_sel1, col_sel2 = st.columns([2, 1])
+        col_sel1, col_sel2 = st.columns([2.5, 1.5])
         with col_sel1:
             chosen_label = st.selectbox(
                 "Select Fault Injection Scenario (F01 - F11)",
@@ -734,7 +724,7 @@ elif app_mode == "🧪 Reliability Lab":
             st.markdown(f"**Category:** `{chosen_scenario.category}`")
             st.markdown(f"**Expected Final Status:** `{chosen_scenario.expected_final_status}`")
 
-    # 10. Visible Display of Injected Fault and Expected Recovery Path
+    # Visible Display of Injected Fault and Expected Recovery Path
     render_fault_and_recovery_cards(
         fault_title=f"Injected Fault ({chosen_scenario.code})",
         fault_desc=f"{chosen_scenario.injected_fault}<br/><small style='margin-top:0.35rem; display:block; opacity:0.85;'>{chosen_scenario.description}</small>",
@@ -742,12 +732,12 @@ elif app_mode == "🧪 Reliability Lab":
         recovery_desc=f"{chosen_scenario.expected_recovery_path}<br/><small style='margin-top:0.35rem; display:block; opacity:0.85;'>Preserves idempotency, zero duplicate rows, and strict error classification.</small>",
     )
 
-    # Execution Action Buttons
+    # Execution Action Buttons (All 3 functional)
     c_btn1, c_btn2, c_btn3 = st.columns(3)
     runner = ReliabilityLabRunner()
 
     with c_btn1:
-        if st.button(f"▶️ Run Scenario ({chosen_scenario.code}) [OFFERHUNT]", type="primary", use_container_width=True):
+        if st.button(f"▶️ Run Scenario ({chosen_scenario.code}) [OFFERHUNT]", key="btn_run_resilient", type="primary", use_container_width=True):
             with st.spinner(f"Injecting fault {chosen_scenario.code} into temporary fixture..."):
                 metric = asyncio.run(runner.run_scenario(chosen_scenario.id, is_baseline=False))
                 st.session_state.metrics_collector.record_run(metric)
@@ -755,7 +745,7 @@ elif app_mode == "🧪 Reliability Lab":
                 st.rerun()
 
     with c_btn2:
-        if st.button(f"⚠️ Run Naive Baseline ({chosen_scenario.code})", type="secondary", use_container_width=True):
+        if st.button(f"⚠️ Run Naive Baseline ({chosen_scenario.code})", key="btn_run_baseline", type="secondary", use_container_width=True):
             with st.spinner(f"Running unhardened baseline under {chosen_scenario.code}..."):
                 metric = asyncio.run(runner.run_scenario(chosen_scenario.id, is_baseline=True))
                 st.session_state.metrics_collector.record_run(metric)
@@ -763,7 +753,7 @@ elif app_mode == "🧪 Reliability Lab":
                 st.rerun()
 
     with c_btn3:
-        if st.button("🚀 Run Complete Controlled Suite (F01–F11)", use_container_width=True):
+        if st.button("🚀 Run Complete Controlled Suite (F01–F11)", key="btn_run_full_suite", use_container_width=True):
             with st.spinner("Executing all 11 scenarios across OFFERHUNT and Baseline..."):
                 for s in scenarios_list:
                     m_oh = asyncio.run(runner.run_scenario(s.id, is_baseline=False))
@@ -773,7 +763,7 @@ elif app_mode == "🧪 Reliability Lab":
                 st.success("Completed controlled suite runs!")
                 st.rerun()
 
-    # Visibly display latest execution metric
+    # Visibly display latest execution metric (5-column KPI cards)
     if st.session_state.last_lab_metric:
         lm: ScenarioRunMetric = st.session_state.last_lab_metric
         st.markdown(f"##### 📊 Latest Execution: `{lm.scenario_code}` ({'Naive Baseline' if lm.is_baseline else 'OFFERHUNT Resilient'})")
@@ -892,7 +882,7 @@ elif app_mode == "🧪 Reliability Lab":
             )
 
         with exp_col3:
-            if st.button("🧹 Clear Metrics Telemetry", use_container_width=True):
+            if st.button("🧹 Clear Metrics Telemetry", key="btn_clear_metrics", use_container_width=True):
                 st.session_state.metrics_collector.clear()
                 st.session_state.last_lab_metric = None
                 st.rerun()
