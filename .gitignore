@@ -1,0 +1,47 @@
+# .gitignore for OFFERHUNT
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python cache & build
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# Secrets and environment variables (NEVER COMMIT)
+.env
+.env*.local
+!.env.example
+
+# Database and local state
+artifacts/*.db
+artifacts/*.sqlite
+artifacts/*.sqlite3
+!artifacts/.gitkeep
+
+# Logs
+logs/*.log
+!logs/.gitkeep
+
+# Temp, cache, drafts
+tmp/
+temp/
+drafts/
+*.tmp
+
+# Editor & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
