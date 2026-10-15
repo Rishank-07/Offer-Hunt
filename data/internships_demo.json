@@ -1,0 +1,103 @@
+[
+  {
+    "record_key": "4f18379c5a1a1db7659550304676be46ce246e7f22312d8a9bdfb13eb0c961e0",
+    "title": "Computer Vision Research Intern",
+    "company": "HyperScale AI",
+    "location": "Bangalore, India",
+    "eligibility": "Pre-final or Final year B.Tech/M.Tech in CS, AI, or ECE. Experience with PyTorch, OpenCV, and YOLO/Transformers.",
+    "stipend": "₹45,000 /month",
+    "deadline": "2026-11-15",
+    "source_url": "https://internshala.com/internship/detail/computer-vision-research-intern-in-bangalore-at-hyperscale-ai1728001",
+    "source_title": "Computer Vision Research Internship in Bangalore at HyperScale AI",
+    "snippet": "HyperScale AI is hiring a Computer Vision Research Intern in Bangalore. You will work on real-time neural rendering and generative visual models. Duration: 6 months with PPO opportunity.",
+    "retrieved_at_utc": "2026-10-15T12:00:00Z",
+    "source_type": "catalog_fixture",
+    "confidence": 0.98,
+    "status": "VERIFIED",
+    "provenance": {
+      "verified_source": "Internshala Verified Employer",
+      "curated_by": "OFFERHUNT Demo Fixture",
+      "ppo_eligible": true
+    }
+  },
+  {
+    "record_key": "c3e80ab4d67362cf12e4f0144ec3c2a84a6c873ad802a4bf74bbbc3a67d5ce87",
+    "title": "Machine Learning Intern (NLP & LLMs)",
+    "company": "TensorLabs India",
+    "location": "Remote",
+    "eligibility": "B.Tech/Dual Degree students with strong Python skills, HuggingFace transformers, and vector databases (Chroma/FAISS).",
+    "stipend": "₹35,000 - ₹40,000 /month",
+    "deadline": "2026-11-20",
+    "source_url": "https://internshala.com/internship/detail/machine-learning-nlp-intern-work-from-home-at-tensorlabs-india1728002",
+    "source_title": "Machine Learning (NLP & LLMs) Work From Home Internship at TensorLabs India",
+    "snippet": "Join TensorLabs to build production-grade Retrieval-Augmented Generation (RAG) pipelines and fine-tune small open-weight LLMs for enterprise agents. 100% remote.",
+    "retrieved_at_utc": "2026-10-15T12:05:00Z",
+    "source_type": "catalog_fixture",
+    "confidence": 0.95,
+    "status": "VERIFIED",
+    "provenance": {
+      "verified_source": "Internshala Verified Employer",
+      "remote": true,
+      "ppo_eligible": true
+    }
+  },
+  {
+    "record_key": "89b70b551aa128e4e9f7830cb85586616ddfa09ff47ab99572c608f7aa1056a2",
+    "title": "Backend Engineering Intern (Distributed Systems)",
+    "company": "Cortex Mobility",
+    "location": "Hyderabad, India",
+    "eligibility": "CS/IT students with understanding of Go or Python, REST/gRPC APIs, Redis caching, and PostgreSQL schema design.",
+    "stipend": "₹40,000 /month",
+    "deadline": "2026-11-10",
+    "source_url": "https://internshala.com/internship/detail/backend-engineering-intern-in-hyderabad-at-cortex-mobility1728003",
+    "source_title": "Backend Engineering Internship in Hyderabad at Cortex Mobility",
+    "snippet": "Work with our fleet telemetry platform streaming 50k GPS events per second. Learn high-throughput distributed systems engineering. Hybrid in Hitec City, Hyderabad.",
+    "retrieved_at_utc": "2026-10-15T12:10:00Z",
+    "source_type": "catalog_fixture",
+    "confidence": 0.94,
+    "status": "VERIFIED",
+    "provenance": {
+      "verified_source": "Internshala Verified Employer",
+      "hybrid": true
+    }
+  },
+  {
+    "record_key": "7a356be113945a8dfce79bb223f04d96c9c8e1040375cf39f99763740e7912cd",
+    "title": "Full Stack Developer Intern (Next.js & Python)",
+    "company": "FinTech Nexus",
+    "location": "Bangalore, India",
+    "eligibility": "Pre-final or Final year students with hands-on experience in TypeScript, React/Next.js, FastAPI, and TailwindCSS.",
+    "stipend": "₹30,000 - ₹35,000 /month",
+    "deadline": "2026-11-25",
+    "source_url": "https://internshala.com/internship/detail/full-stack-developer-intern-in-bangalore-at-fintech-nexus1728004",
+    "source_title": "Full Stack Developer Internship in Bangalore at FinTech Nexus",
+    "snippet": "Develop user-facing financial analytics dashboards and embedded banking workflows with modern responsive UI and reliable backend endpoints.",
+    "retrieved_at_utc": "2026-10-15T12:15:00Z",
+    "source_type": "catalog_fixture",
+    "confidence": 0.92,
+    "status": "VERIFIED",
+    "provenance": {
+      "verified_source": "Internshala Verified Employer",
+      "fast_response": true
+    }
+  },
+  {
+    "record_key": "5b9e02c6ef198a287a38e8156157077df83c9d74945952c1ef34a10df3a1b329",
+    "title": "Data Engineering Intern",
+    "company": "OmniCloud Systems",
+    "location": "Pune, India",
+    "eligibility": "Undergraduate students with strong SQL, Python scripting, Pandas, and familiarity with Apache Spark or dbt.",
+    "stipend": "₹30,000 /month",
+    "deadline": "2026-11-18",
+    "source_url": "https://internshala.com/internship/detail/data-engineering-intern-in-pune-at-omnicloud-systems1728005",
+    "source_title": "Data Engineering Internship in Pune at OmniCloud Systems",
+    "snippet": "OmniCloud Systems is seeking a Data Engineering intern to build ETL data pipelines and validate multi-tenant warehouse models in Snowflake.",
+    "retrieved_at_utc": "2026-10-15T12:20:00Z",
+    "source_type": "catalog_fixture",
+    "confidence": 0.90,
+    "status": "VERIFIED",
+    "provenance": {
+      "verified_source": "Internshala Verified Employer"
+    }
+  }
+]

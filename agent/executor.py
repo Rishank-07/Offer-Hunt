@@ -155,9 +155,13 @@ class StepExecutor:
             )
             raise StepExecutionError(ErrorCategory.POLICY_BLOCK, str(policy_err)) from None
 
-        # Check approval if tool has external-write or irreversible risk
+        # Check approval if tool has external-write or irreversible risk, or approval record exists
         risk = classify_tool_risk(tool_name)
-        if risk in (RiskLevel.EXTERNAL_WRITE, RiskLevel.IRREVERSIBLE):
+        cur = self.conn.cursor()
+        cur.execute("SELECT approval_id FROM approvals WHERE step_id = ?;", (step_id,))
+        has_approval = cur.fetchone() is not None
+
+        if risk in (RiskLevel.EXTERNAL_WRITE, RiskLevel.IRREVERSIBLE) or has_approval:
             is_approved, approval_status = verify_executor_approval(
                 conn=self.conn,
                 step_id=step_id,

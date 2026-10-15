@@ -443,3 +443,226 @@ def record_metric(
 
 create_artifact = record_artifact
 create_evidence = record_evidence
+
+
+def list_runs(conn: sqlite3.Connection, limit: int = 50) -> List[dict[str, Any]]:
+    """List recent runs ordered by started_at_utc descending."""
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT run_id, status, started_at_utc, completed_at_utc, metadata
+        FROM runs
+        ORDER BY started_at_utc DESC
+        LIMIT ?;
+        """,
+        (limit,),
+    )
+    rows = cur.fetchall()
+    results = []
+    for r in rows:
+        results.append({
+            "run_id": r["run_id"],
+            "status": r["status"],
+            "started_at_utc": r["started_at_utc"],
+            "completed_at_utc": r["completed_at_utc"],
+            "metadata": json.loads(r["metadata"]) if r["metadata"] else {},
+        })
+    return results
+
+
+def get_steps_for_run(conn: sqlite3.Connection, run_id: str) -> List[dict[str, Any]]:
+    """Retrieve all steps for a run ordered by step_order ascending."""
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT step_id, run_id, step_order, state, execution_status,
+               verification_status, input_payload, output_payload,
+               error_payload, created_at_utc, updated_at_utc
+        FROM steps
+        WHERE run_id = ?
+        ORDER BY step_order ASC;
+        """,
+        (run_id,),
+    )
+    rows = cur.fetchall()
+    results = []
+    for r in rows:
+        results.append({
+            "step_id": r["step_id"],
+            "run_id": r["run_id"],
+            "step_order": r["step_order"],
+            "state": r["state"],
+            "execution_status": r["execution_status"],
+            "verification_status": r["verification_status"],
+            "input_payload": json.loads(r["input_payload"]) if r["input_payload"] else {},
+            "output_payload": json.loads(r["output_payload"]) if r["output_payload"] else {},
+            "error_payload": json.loads(r["error_payload"]) if r["error_payload"] else None,
+            "created_at_utc": r["created_at_utc"],
+            "updated_at_utc": r["updated_at_utc"],
+        })
+    return results
+
+
+def get_tool_attempts_for_run(conn: sqlite3.Connection, run_id: str) -> List[dict[str, Any]]:
+    """Retrieve all tool attempts for steps in a run."""
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT ta.attempt_id, ta.step_id, ta.tool_name, ta.parameters,
+               ta.result, ta.error, ta.retry_count, ta.started_at_utc, ta.completed_at_utc
+        FROM tool_attempts ta
+        JOIN steps s ON s.step_id = ta.step_id
+        WHERE s.run_id = ?
+        ORDER BY ta.started_at_utc ASC;
+        """,
+        (run_id,),
+    )
+    rows = cur.fetchall()
+    results = []
+    for r in rows:
+        results.append({
+            "attempt_id": r["attempt_id"],
+            "step_id": r["step_id"],
+            "tool_name": r["tool_name"],
+            "parameters": json.loads(r["parameters"]) if r["parameters"] else {},
+            "result": json.loads(r["result"]) if r["result"] else None,
+            "error": json.loads(r["error"]) if r["error"] else None,
+            "retry_count": r["retry_count"],
+            "started_at_utc": r["started_at_utc"],
+            "completed_at_utc": r["completed_at_utc"],
+        })
+    return results
+
+
+def get_evidence_for_run(conn: sqlite3.Connection, run_id: str) -> List[dict[str, Any]]:
+    """Retrieve all evidence recorded for steps in a run."""
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT e.evidence_id, e.step_id, e.evidence_type, e.content,
+               e.source_url, e.hash, e.captured_at_utc
+        FROM evidence e
+        JOIN steps s ON s.step_id = e.step_id
+        WHERE s.run_id = ?
+        ORDER BY e.captured_at_utc ASC;
+        """,
+        (run_id,),
+    )
+    rows = cur.fetchall()
+    results = []
+    for r in rows:
+        results.append({
+            "evidence_id": r["evidence_id"],
+            "step_id": r["step_id"],
+            "evidence_type": r["evidence_type"],
+            "content": r["content"],
+            "source_url": r["source_url"],
+            "hash": r["hash"],
+            "captured_at_utc": r["captured_at_utc"],
+        })
+    return results
+
+
+def get_approvals_for_run(conn: sqlite3.Connection, run_id: str) -> List[dict[str, Any]]:
+    """Retrieve all approvals for steps in a run."""
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT a.approval_id, a.step_id, a.action_type, a.payload,
+               a.status, a.requested_at_utc, a.responded_at_utc, a.response_notes
+        FROM approvals a
+        JOIN steps s ON s.step_id = a.step_id
+        WHERE s.run_id = ?
+        ORDER BY a.requested_at_utc ASC;
+        """,
+        (run_id,),
+    )
+    rows = cur.fetchall()
+    results = []
+    for r in rows:
+        results.append({
+            "approval_id": r["approval_id"],
+            "step_id": r["step_id"],
+            "action_type": r["action_type"],
+            "payload": json.loads(r["payload"]) if r["payload"] else {},
+            "status": r["status"],
+            "requested_at_utc": r["requested_at_utc"],
+            "responded_at_utc": r["responded_at_utc"],
+            "response_notes": r["response_notes"],
+        })
+    return results
+
+
+def update_approval_status(
+    conn: sqlite3.Connection,
+    approval_id: str,
+    status: str,
+    response_notes: Optional[str] = None,
+) -> None:
+    """Update approval status (APPROVED, REJECTED)."""
+    now = get_utc_iso()
+    with db_transaction(conn) as cur:
+        cur.execute(
+            """
+            UPDATE approvals
+            SET status = ?, responded_at_utc = ?, response_notes = ?
+            WHERE approval_id = ?;
+            """,
+            (status, now, response_notes, approval_id),
+        )
+
+
+def get_artifacts_for_run(conn: sqlite3.Connection, run_id: str) -> List[dict[str, Any]]:
+    """Retrieve all artifacts created for a run."""
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT artifact_id, run_id, step_id, artifact_type, path, sha256,
+               metadata, created_at_utc
+        FROM artifacts
+        WHERE run_id = ?
+        ORDER BY created_at_utc ASC;
+        """,
+        (run_id,),
+    )
+    rows = cur.fetchall()
+    results = []
+    for r in rows:
+        results.append({
+            "artifact_id": r["artifact_id"],
+            "run_id": r["run_id"],
+            "step_id": r["step_id"],
+            "artifact_type": r["artifact_type"],
+            "path": r["path"],
+            "sha256": r["sha256"],
+            "metadata": json.loads(r["metadata"]) if r["metadata"] else {},
+            "created_at_utc": r["created_at_utc"],
+        })
+    return results
+
+
+def get_events_for_run(conn: sqlite3.Connection, run_id: str) -> List[dict[str, Any]]:
+    """Retrieve all audit events for a run ordered by created_at_utc ascending."""
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT event_id, run_id, step_id, event_type, severity, payload, created_at_utc
+        FROM events
+        WHERE run_id = ?
+        ORDER BY created_at_utc ASC;
+        """,
+        (run_id,),
+    )
+    rows = cur.fetchall()
+    results = []
+    for r in rows:
+        results.append({
+            "event_id": r["event_id"],
+            "run_id": r["run_id"],
+            "step_id": r["step_id"],
+            "event_type": r["event_type"],
+            "severity": r["severity"],
+            "payload": json.loads(r["payload"]) if r["payload"] else {},
+            "created_at_utc": r["created_at_utc"],
+        })
+    return results

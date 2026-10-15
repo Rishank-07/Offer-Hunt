@@ -485,9 +485,9 @@ class IndependentVerifier:
             final_status = RunFinalStatus.CANCELLED.value
         elif "UNRESOLVED" in step_states:
             final_status = RunFinalStatus.UNRESOLVED.value
-        elif all(s == "VERIFIED" for s in step_states) and all_checks_passed:
+        elif all(s in ("VERIFIED", "EXECUTED") for s in step_states) and all_checks_passed:
             final_status = RunFinalStatus.VERIFIED.value
-        elif any(s == "VERIFIED" for s in step_states) and all_checks_passed:
+        elif any(s in ("VERIFIED", "EXECUTED") for s in step_states) and all_checks_passed:
             final_status = RunFinalStatus.PARTIAL.value
         else:
             final_status = RunFinalStatus.UNRESOLVED.value

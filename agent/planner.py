@@ -104,8 +104,14 @@ class MockPlanner(BasePlanner):
         live_catalog_tool_names: Set[str],
     ) -> GoalPlan:
         """Create a valid deterministic 4-step plan for the given goal."""
+        uid = uuid.uuid4().hex[:6]
+        s1_id = f"step_01_{uid}"
+        s2_id = f"step_02_{uid}"
+        s3_id = f"step_03_{uid}"
+        s4_id = f"step_04_{uid}"
+
         step1 = StepSpec(
-            step_id="step_01_search",
+            step_id=s1_id,
             tool_name="search_internships",
             typed_args={"query": goal[:100], "max_results": 5},
             dependencies=[],
@@ -115,7 +121,7 @@ class MockPlanner(BasePlanner):
             verification_method="evidence_captured",
         )
         step2 = StepSpec(
-            step_id="step_02_upsert",
+            step_id=s2_id,
             tool_name="upsert_internships",
             typed_args={
                 "records": [
@@ -129,31 +135,31 @@ class MockPlanner(BasePlanner):
                 ],
                 "target_path": "offers.xlsx",
             },
-            dependencies=["step_01_search"],
+            dependencies=[s1_id],
             rationale="Atomically record discovered internships into the tracking spreadsheet.",
             expected_artifact="offers.xlsx",
             risk_level=RiskLevel.LOCAL_WRITE.value,
             verification_method="file_exists_and_valid",
         )
         step3 = StepSpec(
-            step_id="step_03_verify",
+            step_id=s3_id,
             tool_name="verify_task_result",
-            typed_args={"step_id": "step_02_upsert", "expected_artifact": "offers.xlsx"},
-            dependencies=["step_02_upsert"],
+            typed_args={"step_id": s2_id, "expected_artifact": "offers.xlsx"},
+            dependencies=[s2_id],
             rationale="Verify spreadsheet artifact creation and integrity.",
             expected_artifact=None,
             risk_level=RiskLevel.READ_ONLY.value,
             verification_method="file_exists_and_valid",
         )
         step4 = StepSpec(
-            step_id="step_04_draft",
+            step_id=s4_id,
             tool_name="create_email_draft",
             typed_args={
                 "recipient": "internships@toptech.com",
                 "subject": f"Inquiry regarding Internship Opportunities - {goal[:30]}",
                 "body": "Hello,\nI am writing to express interest in the software engineering internship.",
             },
-            dependencies=["step_03_verify"],
+            dependencies=[s3_id],
             rationale="Create local email inquiry draft without sending.",
             expected_artifact=None,
             risk_level=RiskLevel.LOCAL_WRITE.value,
@@ -288,9 +294,9 @@ def persist_plan_and_catalog(
 
     # 2. Save tool catalog snapshot as artifact
     catalog_dicts = [
-        {"name": t.name, "description": t.description, "input_schema": t.input_schema}
+        {"name": t.name, "description": getattr(t, "description", ""), "input_schema": getattr(t, "input_schema", {})}
         if hasattr(t, "name")
-        else dict(t)
+        else ({"name": str(t)} if isinstance(t, str) else dict(t))
         for t in catalog_snapshot
     ]
     create_artifact(

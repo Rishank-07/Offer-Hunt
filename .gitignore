@@ -24,9 +24,7 @@ build/
 !.env.example
 
 # Database and local state
-artifacts/*.db
-artifacts/*.sqlite
-artifacts/*.sqlite3
+artifacts/*
 !artifacts/.gitkeep
 
 # Logs

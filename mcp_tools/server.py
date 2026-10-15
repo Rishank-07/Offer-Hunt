@@ -281,6 +281,7 @@ def verify_task_result(
     expected_artifact: Optional[str] = None,
     verification_method: str = "file_exists_and_valid",
     db_path: Optional[str] = None,
+    target_path: Optional[str] = None,
 ) -> dict[str, Any]:
     """Verify execution outcome of a step.
 
@@ -288,13 +289,14 @@ def verify_task_result(
     - expected_artifact: File path of the expected output artifact.
     - verification_method: Method identifier (e.g. file_exists_and_valid).
     """
+    effective_artifact = expected_artifact or target_path
     logger.info("verify_task_result called for step_id='%s'", step_id)
 
     verified = False
     details = ""
 
-    if expected_artifact:
-        p = Path(expected_artifact)
+    if effective_artifact:
+        p = Path(effective_artifact)
         if not p.is_absolute():
             p = (DEFAULT_OUTPUT_DIR / p).resolve()
 
