@@ -210,3 +210,111 @@ def validate_plan_against_policy(
 
     # 3. DAG cycle check
     validate_dag_acyclic(steps)
+
+
+# ---------------------------------------------------------------------------
+# Approval Enforcement at Executor/Tool Boundary (M6)
+# ---------------------------------------------------------------------------
+
+import hashlib
+import json
+import sqlite3
+
+FORBIDDEN_ACTIONS = {
+    "send_email",
+    "send_mail",
+    "transmit_email",
+    "execute_shell",
+    "run_bash",
+    "run_command",
+    "arbitrary_write",
+    "delete_file",
+}
+
+
+def compute_action_digest(action_type: str, payload: dict[str, Any]) -> str:
+    """Compute deterministic SHA-256 digest of an action and its canonical arguments."""
+    canonical_payload = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    content = f"{action_type}:{canonical_payload}"
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
+
+def check_action_policy_allowed(action_type: str, tool_name: str) -> None:
+    """Verify that an action or tool is not permanently prohibited by safety policies.
+
+    Raises:
+        PlanValidationError with POLICY_BLOCK if action is strictly forbidden.
+    """
+    clean_action = action_type.lower().strip()
+    clean_tool = tool_name.lower().strip()
+    if clean_action in FORBIDDEN_ACTIONS or clean_tool in FORBIDDEN_ACTIONS:
+        raise PlanValidationError(
+            f"Action '{action_type}' / Tool '{tool_name}' is permanently blocked by safety policy (POLICY_BLOCK).",
+        )
+    if "send" in clean_action or "send" in clean_tool:
+        raise PlanValidationError(
+            f"Simulated or real send actions are strictly prohibited: '{action_type}' (POLICY_BLOCK).",
+        )
+
+
+def verify_executor_approval(
+    conn: sqlite3.Connection,
+    step_id: str,
+    action_type: str,
+    payload: dict[str, Any],
+) -> tuple[bool, str]:
+    """Verify approval state at the executor/tool boundary.
+
+    Enforces:
+    - Approvals are cryptographically bound to action digest (action_type + canonical payload).
+    - Status must be APPROVED. If REJECTED, immediately blocks execution with no retries.
+    - If payload changed since approval was granted, approval is marked EXPIRED/stale and blocked.
+
+    Returns:
+        (is_approved, status):
+        - (True, "APPROVED") if valid approval exists with matching digest.
+        - (False, status) if approval is pending, rejected, expired, or missing.
+    """
+    # 1. First enforce permanent policy blocks
+    check_action_policy_allowed(action_type, tool_name=action_type)
+
+    current_digest = compute_action_digest(action_type, payload)
+
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT approval_id, action_type, payload, status
+        FROM approvals
+        WHERE step_id = ?
+        ORDER BY requested_at_utc DESC
+        LIMIT 1;
+        """,
+        (step_id,),
+    )
+    row = cur.fetchone()
+
+    if not row:
+        return False, "NO_APPROVAL_RECORD"
+
+    status = row["status"]
+    saved_payload = json.loads(row["payload"]) if row["payload"] else {}
+    saved_digest = compute_action_digest(row["action_type"], saved_payload)
+
+    # Check if arguments changed (stale approval detection)
+    if saved_digest != current_digest:
+        # Mark approval as EXPIRED due to argument mutation
+        with conn:
+            conn.execute(
+                "UPDATE approvals SET status = 'EXPIRED' WHERE approval_id = ?;",
+                (row["approval_id"],),
+            )
+        return False, "EXPIRED"
+
+    if status == "APPROVED":
+        return True, "APPROVED"
+    elif status == "REJECTED":
+        return False, "REJECTED"
+    elif status == "EXPIRED":
+        return False, "EXPIRED"
+
+    return False, "PENDING"
